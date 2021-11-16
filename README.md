@@ -11,7 +11,7 @@ This is still very experimental and should not be used in any production environ
 
 ### Requirements
 
-* Kubernetes 1.20+ (CSI v2.0.0 compatibility)
+* Kubernetes 1.20+ (CSI v1.0.0 compatibility)
 * Kubernetes has to allow privileged containers
 * Container Runtime Interface: CRI-O/Conatinerd/Docker
 * Docker daemon must allow shared mounts (systemd flag `MountFlags=shared`)
