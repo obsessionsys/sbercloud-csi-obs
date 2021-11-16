@@ -1,0 +1,21 @@
+# If you want creating StorageClass S3, set the secretKey.create is true 
+# and storageClass.create is true 
+# accessKeyID and secretAccessKey you must get from user account
+# see how to get (https://support.hc.sbercloud.ru/en-us/sdk-java-devg/obs/obs_21_0103.html)
+namespace: kube-system
+secretKey:
+  create: false
+  keyName: csi-s3-secret
+  data:
+    accessKeyID: <SET_ACCESS_KEY_ID>
+    secretAccessKey: <SET_SECRET_ACCESS_KEY>
+    endpoint: "https://obs.ru-moscow-1.hc.sbercloud.ru"
+    # If not on S3, set it to ""
+    region: ""
+
+storageClass:
+  create: false
+  # specify which mounter to use
+  # can be set to rclone, s3fs, goofys or s3backer 
+  mounter: s3fs
+

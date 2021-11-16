@@ -1,0 +1,50 @@
+# Default values for php-fpm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+
+
+imageCredentials:
+  usePrivate: false
+  registry: gitlab.someone.ru
+  username: someone
+  password: sillyness
+  email: obsessionsys@gmail.com
+  
+replicaCount: 1
+namespace: kube-system
+
+attacher:
+  image:
+    repository: quay.io/k8scsi/csi-attacher
+    tag: v3.0.2
+    pullPolicy: IfNotPresent
+  service:
+    port: 65535
+  resources:
+    limits:
+      cpu: 300m
+      memory: 300Mi
+    requests:
+      cpu: 300m
+      memory: 300Mi
+
+
+
+nodeSelector: {}
+
+tolerations: 
+  - key: node-role.kubernetes.io/master
+    operator: "Exists"
+  - key: node-role.kubernetes.io/control-plane
+    operator: "Exists"
+
+affinity: {}
+
+annotations: {}

@@ -1,0 +1,16 @@
+{{- if .Values.serviceAccount.create }}
+{{- $name := "attr" -}}
+{{- $data := dict "name" $name "Chart" .Chart "Release" .Release "Values" .Values -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "chart.serviceAccountName" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "chart.labels" $data | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+{{ toYaml .Values.annotations | indent 4 }}
+  {{- end }}
+
+{{- end }}

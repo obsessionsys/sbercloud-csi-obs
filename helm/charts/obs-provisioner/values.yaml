@@ -1,0 +1,82 @@
+# Default values for php-fpm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+
+
+imageCredentials:
+  usePrivate: false
+  registry: gitlab.someone.ru
+  username: someone
+  password: sillyness
+  email: obsessionsys@gmail.com
+  
+replicaCount: 1
+namespace: kube-system
+
+provisioner:
+  image:
+    repository: quay.io/k8scsi/csi-provisioner
+    tag: v2.1.0
+    pullPolicy: IfNotPresent
+  service:
+    port: 65535
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+
+csiplugin:
+  image:
+    repository: ctrox/csi-s3
+    tag: v1.2.0-rc.1
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+
+livenessplugin:
+  image:
+    repository: quay.io/k8scsi/livenessprobe
+    tag: v2.2.0
+    pullPolicy: IfNotPresent
+  livenessProbe:
+      failureThreshold: 5
+      httpGet:
+        path: /healthz
+        port: healthz
+      initialDelaySeconds: 30
+      timeoutSeconds: 10
+      periodSeconds: 30
+  resources:
+    limits:
+      cpu: 100m
+      memory: 100Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+nodeSelector: {}
+
+tolerations: 
+  - key: node-role.kubernetes.io/master
+    operator: "Exists"
+  - key: node-role.kubernetes.io/control-plane
+    operator: "Exists"
+
+affinity: {}
+
+annotations: {}

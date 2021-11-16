@@ -1,0 +1,22 @@
+{{- if and .Values.secretKey.create .Values.storageClass.create }}
+{{- $fullName := include "chart.fullname" . -}}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ $fullName }}-csi-s3
+provisioner: ch.ctrox.csi.s3-driver
+parameters:
+  # specify which mounter to use
+  # can be set to rclone, s3fs, goofys or s3backer
+  mounter: {{ .Values.storageClass.mounter }}
+  # to use an existing bucket, specify it here:
+  # bucket: some-existing-bucket
+  csi.storage.k8s.io/provisioner-secret-name: {{ .Values.secretKey.keyName }}
+  csi.storage.k8s.io/provisioner-secret-namespace: {{ .Values.namespace }}
+  csi.storage.k8s.io/controller-publish-secret-name: {{ .Values.secretKey.keyName }}
+  csi.storage.k8s.io/controller-publish-secret-namespace: {{ .Values.namespace }}
+  csi.storage.k8s.io/node-stage-secret-name: {{ .Values.secretKey.keyName }}
+  csi.storage.k8s.io/node-stage-secret-namespace: {{ .Values.namespace }}
+  csi.storage.k8s.io/node-publish-secret-name: {{ .Values.secretKey.keyName }}
+  csi.storage.k8s.io/node-publish-secret-namespace: {{ .Values.namespace }}
+{{- end }}

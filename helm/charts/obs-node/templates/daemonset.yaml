@@ -1,0 +1,105 @@
+{{- $fullName := include "chart.fullname" . -}}
+{{- $name := "pvner" -}}
+{{- $data := dict "name" $name "Chart" .Chart "Release" .Release "Values" .Values -}}
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "chart.labels" $data | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+{{ toYaml .Values.annotations | indent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" $data | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "chart.selectorLabels" $data | nindent 8 }}
+    spec:
+      serviceAccount: {{ include "chart.serviceAccountName" . }}
+      {{- if .Values.imageCredentials.usePrivate }}
+      imagePullSecrets: 
+        - name: {{ $fullName }}
+      {{- end }}
+      hostNetwork: {{ .Values.driverRegistrar.hostNetwork }}
+      containers:
+        - name: driver-registrar
+          image: "{{ .Values.driverRegistrar.image.repository }}:{{ .Values.driverRegistrar.image.tag }}" 
+          args:
+            - "--kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)"
+            - "--v=4"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+            - name: DRIVER_REG_SOCK_PATH
+              value: /var/lib/kubelet/plugins/ch.ctrox.csi.s3-driver/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /csi
+            - name: registration-dir
+              mountPath: /registration/
+          resources:
+            {{- toYaml .Values.driverRegistrar.resources | nindent 12 }}
+        - name: csi-obs
+          image: "{{ .Values.csiplugin.image.repository }}:{{ .Values.csiplugin.image.tag }}"
+          securityContext:
+            {{- toYaml .Values.csiplugin.securityContext | nindent 12 }}
+          args:
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--nodeid=$(NODE_ID)"
+            - "--v=4"
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///csi/csi.sock
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /csi
+            - name: pods-mount-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: "Bidirectional"
+            - name: fuse-device
+              mountPath: /dev/fuse
+          resources:
+            {{- toYaml .Values.csiplugin.resources | nindent 12 }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: DirectoryOrCreate
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/ch.ctrox.csi.s3-driver
+            type: DirectoryOrCreate
+        - name: pods-mount-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: Directory
+        - name: fuse-device
+          hostPath:
+            path: /dev/fuse

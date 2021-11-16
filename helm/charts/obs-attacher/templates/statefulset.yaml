@@ -1,0 +1,62 @@
+{{- $fullName := include "chart.fullname" . -}}
+{{- $name := "attr" -}}
+{{- $data := dict "name" $name "Chart" .Chart "Release" .Release "Values" .Values -}}
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "chart.labels" $data | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+{{ toYaml .Values.annotations | indent 4 }}
+  {{- end }}
+spec:
+  serviceName: {{ $fullName | quote }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "chart.selectorLabels" $data | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "chart.selectorLabels" $data | nindent 8 }}
+    spec:
+      serviceAccount: {{ include "chart.serviceAccountName" . }}
+      {{- if .Values.imageCredentials.usePrivate }}
+      imagePullSecrets: 
+        - name: {{ $fullName }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}-{{ $name }}
+          image: "{{ .Values.attacher.image.repository }}:{{ .Values.attacher.image.tag | default .Chart.AppVersion }}" 
+          args:
+            - "--v=4"
+            - "--csi-address=$(ADDRESS)"
+          env:
+            - name: ADDRESS
+              value: /var/lib/kubelet/plugins/ch.ctrox.csi.s3-driver/csi.sock
+          imagePullPolicy: {{ .Values.attacher.image.pullPolicy | quote }}
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /var/lib/kubelet/plugins/ch.ctrox.csi.s3-driver
+          resources:
+            {{- toYaml .Values.attacher.resources | nindent 12 }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: socket-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/ch.ctrox.csi.s3-driver
+            type: DirectoryOrCreate
