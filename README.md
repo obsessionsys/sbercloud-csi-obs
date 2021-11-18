@@ -36,6 +36,8 @@ The plugin was tested on the following Kubernetes installation:
 | SbecCloud Self Managed |   1.22.1       |  true          |   ok  |
 | SbecCloud Self Managed |   1.22.2       |  true          |   ok  |
 | SbecCloud Self Managed |   1.22.3       |  true          |   ok  | 
+
+## Manual installation
 ### 1. Create a secret with your S3 credentials
 
 ```yaml
@@ -106,6 +108,20 @@ kubectl create -f examples/create_backet/storageclass.yaml
     ```
 
 If something does not work as expected, check the troubleshooting section below.
+
+## Helm installation
+
+### 1. Get AK/SK Keys
+
+You need to create AK/SK keys according to the following instructions: https://support.hc.sbercloud.ru/en-us/sdk-java-devg/obs/obs_21_0103.html
+
+### 2. Deploy the controller plugin
+
+```bash
+$ git clone git@github.com:obsessionsys/sbercloud-csi-obs.git
+$ cd sbercloud-csi-obs
+$ helm upgrade --install csi -n kube-system --set secretKey.create=true,secretKey.data.accessKeyID=<YOUR_ACCESS_KEY_ID_FROM_CREDENTIAL_CSV>,secretKey.data.secretAccessKey=<YOUR_SECRET_ACCESS_KEY_FROM_CREDENTIAL_CSV>,secretKey.data.endpoint=https://obs.ru-moscow-1.hc.sbercloud.ru --set storageClass.create=true ./helm
+```
 
 ## Additional configuration
 

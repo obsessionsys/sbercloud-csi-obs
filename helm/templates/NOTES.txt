@@ -1,0 +1,58 @@
+{{- if and .Values.secretKey.create .Values.storageClass.create }}
+{{- $fullName := include "chart.fullname" . -}}
+
+
+###############################
+Testing the Object Block Storage 
+###############################
+
+1. Creating a Persistent Volume Claim
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $fullName }}-s3-pvc
+  namespace: default
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: {{ $fullName }}-csi-s3
+EOF
+
+2. Creating the nginx pod with attach PVC
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ $fullName }}-test-nginx
+  namespace: default
+spec:
+  containers:
+   - name: csi-s3-test-nginx
+     image: nginx
+     volumeMounts:
+       - mountPath: /var/lib/www/html
+         name: webroot
+  volumes:
+   - name: webroot
+     persistentVolumeClaim:
+       claimName: {{ $fullName }}-s3-pvc
+       readOnly: false
+EOF
+
+
+3. Checking if the PVC has been bound:
+
+    $ kubectl get pvc {{ $fullName }}-s3-pvc
+
+4. Test the mount
+
+    $ kubectl exec -ti {{ $fullName }}-test-nginx bash
+    $ mount | grep fuse
+
+{{- end }}

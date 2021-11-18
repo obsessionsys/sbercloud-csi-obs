@@ -1,0 +1,61 @@
+# Default values.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+
+
+imageCredentials:
+  usePrivate: false
+  registry: gitlab.someone.ru
+  username: someone
+  password: sillyness
+  email: obsessionsys@gmail.com
+  
+replicaCount: 1
+namespace: kube-system
+
+driverRegistrar:
+  hostNetwork: true
+  image:
+    repository: quay.io/k8scsi/csi-node-driver-registrar
+    tag: v2.1.0
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 300m
+      memory: 300Mi
+    requests:
+      cpu: 300m
+      memory: 300Mi
+
+csiplugin:
+  image:
+    repository: ctrox/csi-s3
+    tag: v1.2.0-rc.1
+    pullPolicy: IfNotPresent
+  resources:
+    limits:
+      cpu: 200m
+      memory: 200Mi
+    requests:
+      cpu: 200m
+      memory: 200Mi
+  securityContext:
+    privileged: true
+    capabilities:
+      add: ["SYS_ADMIN"]
+    allowPrivilegeEscalation: true
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+annotations: {}

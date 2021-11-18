@@ -1,0 +1,20 @@
+{{- $fullName := include "chart.fullname" . -}}
+{{- $name := "attr" -}}
+{{- $data := dict "name" $name "Chart" .Chart "Release" .Release "Values" .Values -}}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "chart.labels" $data | nindent 4 }}
+  {{- if .Values.annotations }}
+  annotations:
+{{ toYaml .Values.annotations | indent 4 }}
+  {{- end }}
+spec:
+  selector:
+    {{- include "chart.selectorLabels" $data | nindent 6 }}
+  ports:
+    - name: csi-s3-dummy
+      port: {{ .Values.attacher.service.port }}

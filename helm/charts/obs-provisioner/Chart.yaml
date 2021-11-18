@@ -1,0 +1,15 @@
+annotations:
+  category: SberCloud CSI
+apiVersion: v2
+appVersion: 1.2.0
+description: A Helm chart for a SberCloud OBS 
+engine: gotpl
+name: obs-provisioner
+version: 1.2.0
+keywords:
+- csi
+- s3
+- cluster
+maintainers:
+- email: v.fedorov@eapteka.ru
+  name: Fedorov Vitaly

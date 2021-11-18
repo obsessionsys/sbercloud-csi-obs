@@ -1,0 +1,56 @@
+# If you want creating StorageClass S3, set the secretKey.create is true 
+# and storageClass.create is true 
+# accessKeyID and secretAccessKey you must get from user account
+# see how to get (https://support.hc.sbercloud.ru/en-us/sdk-java-devg/obs/obs_21_0103.html)
+namespace: kube-system
+secretKey:
+  create: false
+  keyName: csi-s3-secret
+  data:
+    accessKeyID: <SET_ACCESS_KEY_ID>
+    secretAccessKey: <SET_SECRET_ACCESS_KEY>
+    endpoint: "https://obs.ru-moscow-1.hc.sbercloud.ru"
+    # If not on S3, set it to ""
+    region: ""
+
+storageClass:
+  create: false
+  # specify which mounter to use
+  # can be set to rclone, s3fs, goofys or s3backer 
+  mounter: s3fs
+  # custom: |-
+  #   ---
+  #   kind: StorageClass
+  #   apiVersion: storage.k8s.io/v1
+  #   metadata:
+  #     name: csi-obs-s3-delete
+  #   provisioner: ch.ctrox.csi.s3-driver
+  #   reclaimPolicy: Delete
+  #   parameters:
+  #     mounter: s3fs
+  #     csi.storage.k8s.io/provisioner-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/provisioner-secret-namespace: kube-system
+  #     csi.storage.k8s.io/controller-publish-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/controller-publish-secret-namespace: kube-system
+  #     csi.storage.k8s.io/node-stage-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/node-stage-secret-namespace: kube-system
+  #     csi.storage.k8s.io/node-publish-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/node-publish-secret-namespace: kube-system
+  #   ---
+  #   kind: StorageClass
+  #   apiVersion: storage.k8s.io/v1
+  #   metadata:
+  #     name: csi-obs-s3-retain
+  #   provisioner: ch.ctrox.csi.s3-driver
+  #   reclaimPolicy: Retain
+  #   parameters:
+  #     mounter: s3fs
+  #     csi.storage.k8s.io/provisioner-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/provisioner-secret-namespace: kube-system
+  #     csi.storage.k8s.io/controller-publish-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/controller-publish-secret-namespace: kube-system
+  #     csi.storage.k8s.io/node-stage-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/node-stage-secret-namespace: kube-system
+  #     csi.storage.k8s.io/node-publish-secret-name: csi-s3-secret
+  #     csi.storage.k8s.io/node-publish-secret-namespace: kube-system
+  #   ---
